@@ -1,0 +1,197 @@
+<!DOCTYPE html><html lang="ro"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#000"><title>Nest DIY</title>
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;color:#fff;font-family:system-ui,Roboto,sans-serif;overflow:hidden;user-select:none}
+#bg{position:fixed;inset:0;background-size:cover;background-position:center;transition:background-image 1s}
+#dim{position:fixed;inset:0;background:#000;pointer-events:none;z-index:50;transition:opacity 2s}
+#top{position:fixed;top:8px;right:18px;z-index:30;font-size:14px;display:flex;gap:10px;text-shadow:0 1px 6px #000}
+.pg{position:absolute;inset:0 0 70px 0;padding:14px 18px 6px;display:none;overflow:auto;gap:12px}.pg.on{display:flex}
+#nav{position:fixed;bottom:7px;left:8px;right:8px;height:56px;display:flex;align-items:center;background:rgba(12,16,30,.62);backdrop-filter:blur(20px);border:1px solid #fff3;border-radius:22px;z-index:40}
+#nav button{flex:1;background:none;border:0;color:#fffd;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0;position:relative}
+#nav button span{font-size:20px;height:24px;display:flex;align-items:center}
+#nav button.on{color:#4da3ff}#nav button.on:after{content:'';position:absolute;bottom:-3px;left:18%;right:18%;height:3px;border-radius:3px;background:#4da3ff}
+#nav i{width:1px;height:60%;background:#fff3}
+.ic{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:12px;font-style:normal;color:#fff}
+.glass{background:rgba(10,14,30,.55);backdrop-filter:blur(16px);border:1px solid #fff2;border-radius:22px;padding:14px}
+button.b{background:#fff3;border:1px solid #fff3;color:#fff;border-radius:16px;padding:10px 16px;font-size:15px}
+#clock{flex-direction:column;justify-content:center;align-items:center;padding-bottom:40px}
+#bigt{font-size:min(38vh,27vw);font-weight:500;line-height:1;text-shadow:0 0 40px #fff5}
+#bigd{font-size:max(4vh,18px);margin-top:4px;text-shadow:0 2px 10px #000}
+#ht{font-size:min(20vh,12vw);font-weight:500;line-height:1;text-shadow:0 2px 14px #0008}#hd{font-size:20px;text-shadow:0 2px 10px #000}
+.big2{font-size:44px;font-weight:300}small{font-size:.5em}.dim{opacity:.65}
+.row{display:flex;gap:8px;overflow-x:auto}.chip{background:#fff1;border-radius:14px;padding:8px 10px;text-align:center;font-size:13px;min-width:62px}
+.chip2{background:#fff1;border-radius:12px;padding:7px 12px;margin:4px 0;font-size:14px;white-space:nowrap}
+.ev{display:flex;gap:10px;align-items:center;margin:7px 0;font-size:14px}.ev i{width:12px;height:12px;border-radius:50%;flex:none}
+#cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:13px}
+#cg u{text-decoration:none;padding:5px 0;border-radius:50%;position:relative}#cg u.sel,#cg u.tod{background:#2f8cff}#cg s{position:absolute;bottom:0;left:50%;width:4px;height:4px;margin-left:-2px;background:#8cf;border-radius:2px}
+.play{width:54px;height:54px;border-radius:50%;background:#fff;color:#000;border:0;font-size:22px}.ib{background:none;border:0;color:#fff;font-size:22px}
+#sbar{flex:1;height:4px;background:#fff3;border-radius:4px}#sfill{height:100%;width:0;background:#1db954;border-radius:4px}
+#photo{padding:0;margin:0 8px;border-radius:22px;overflow:hidden}.pi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;transition:opacity 1.2s;opacity:0}
+#pt{position:absolute;right:20px;top:34px;font-size:34px;font-weight:500;text-shadow:0 2px 12px #000}
+.ar{position:absolute;top:42%;width:44px;height:44px;border-radius:50%;background:#0008;border:1px solid #fff4;color:#fff;font-size:22px}
+#pill{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#000a;border:1px solid #fff3;border-radius:20px;padding:4px 12px;font-size:14px;display:flex;gap:10px;align-items:center;white-space:nowrap}
+#pill button{background:none;border:0;color:#fff;font-size:16px}
+a.card{display:block;color:#fff;text-decoration:none}
+#set label{display:block;margin:8px 0 2px;font-size:13px;opacity:.8}
+#set input:not([type=checkbox]):not([type=range]),#set textarea,#set select{width:100%;background:#0006;color:#fff;border:1px solid #fff3;border-radius:10px;padding:8px}
+#set .col{flex:1;min-width:240px}
+</style></head><body>
+<div id="bg"></div><div id="dim"></div>
+
+<div id="top"><span id="wf">📶</span><span id="bt"></span></div>
+<div class="pg on" id="clock"><div id="bigt"></div><div id="bigd"></div>
+<div style="position:absolute;top:10px;left:14px;display:flex;gap:6px"><button class="b" onclick="nextBg(-1)">‹</button><button class="b" onclick="nextBg(1)">›</button></div></div>
+
+<div class="pg" id="home" style="flex-direction:column;justify-content:space-between"><div><div id="ht"></div><div id="hd"></div></div>
+<div style="display:flex;gap:12px"><div class="glass" id="hw" style="flex:1">Se încarcă vremea…</div><div class="glass" id="he" style="flex:1.2"></div></div></div>
+
+<div class="pg" id="cal"><div class="glass" style="flex:1;overflow:auto"><b>📅 Calendar</b><br><button class="b" id="cbtn" onclick="gconn()" style="margin:8px 0">Conectează Google Calendar</button><div id="ca"></div></div>
+<div class="glass" style="flex:1.2"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><button class="b" onclick="cm.setMonth(cm.getMonth()-1);rc()">‹</button><b id="cmh"></b><button class="b" onclick="cm.setMonth(cm.getMonth()+1);rc()">›</button></div><div id="cg"></div></div></div>
+
+<div class="pg" id="spot" style="flex-direction:column"><div class="glass" style="flex:1;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:center"><b><span class="ic" style="background:#1db954">♪</span> Spotify</b><span class="dim" id="snow"></span></div>
+<div style="display:flex;gap:16px;align-items:center;flex:1"><img id="sc" style="width:min(30vh,120px);height:min(30vh,120px);border-radius:14px;background:#fff2"><div style="flex:1">
+<div id="sa" style="font-size:24px;font-weight:600">Spotify</div><div id="sn" class="dim" style="font-size:17px">Nimic în redare</div>
+<div style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12px"><span id="st1">0:00</span><div id="sbar"><div id="sfill"></div></div><span id="st2">0:00</span></div>
+<div style="display:flex;align-items:center;justify-content:space-around"><button class="ib" id="shb" onclick="shf()">🔀</button><button class="ib" onclick="sc('POST','/me/player/previous')">⏮</button><button class="play" id="spp" onclick="sc('PUT',pl?'/me/player/pause':'/me/player/play')">▶</button><button class="ib" onclick="sc('POST','/me/player/next')">⏭</button><input type="range" id="sv" min="0" max="100" style="width:90px" onchange="sapi('/me/player/volume?volume_percent='+this.value,{method:'PUT'})"></div>
+<button class="b" id="sbtn" onclick="sauth()" style="margin-top:6px">Conectează Spotify</button></div></div>
+<div class="row" id="spl"></div></div></div>
+
+<div class="pg" id="ytm"><div class="glass" style="flex:1"><b><span class="ic" style="background:#ff0033">▶</span> YouTube Music</b><p class="dim" style="font-size:13px;margin:10px 0">Redarea se controlează din aplicația YouTube Music (nu există API oficial de control pentru web).</p>
+<a class="b card" style="text-align:center;border-radius:16px;padding:12px;background:#fff3" href="intent://music.youtube.com/#Intent;scheme=https;package=com.google.android.apps.youtube.music;end">▶ Deschide aplicația YouTube Music</a></div>
+<div class="glass" style="flex:1;overflow:auto"><b>Playlisturi salvate</b><div id="yl"></div></div></div>
+
+<div class="pg" id="photo"><img class="pi"><img class="pi"><div id="pmsg" style="position:absolute;inset:0;display:none;text-align:center;padding-top:30vh">Adaugă fotografii din Setări ⚙</div><div id="pt"></div>
+<button class="ar" style="left:12px" onclick="pn(-1)">‹</button><button class="ar" style="right:12px" onclick="pn(1)">›</button>
+<div id="pill"><button onclick="pp^=1;this.textContent=pp?'▶':'⏸'">⏸</button>Schimbare foto: <span id="pis">30</span> sec.<button onclick="show('set')">⚙</button></div></div>
+
+<div class="pg" id="weather" style="flex-direction:column"><div class="glass" style="flex:1;display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between"><b>⛅ Meteo</b><span id="wloc"></span></div>
+<div style="display:flex;gap:16px;align-items:center;flex:1"><div id="wc"></div><div class="row" id="wd" style="flex:1"></div></div></div><div class="glass"><div class="row" id="wh"></div></div></div>
+
+<div class="pg" id="set"><div class="col glass">
+<label><input type="checkbox" data-k="h24"> Format 24h</label>
+<label>Repaus după (secunde)</label><input type="number" data-k="idle">
+<label>Interval fotografii</label><select data-k="interval"><option>10</option><option>30</option><option>60</option></select>
+<label><input type="checkbox" data-k="shuffle"> Shuffle foto</label><label><input type="checkbox" data-k="pclock"> Ceas peste fotografie</label>
+<label>Luminozitate activă (%)</label><input type="range" min="10" max="100" data-k="bright"><label>Luminozitate în repaus (%) — 0 = ecran negru</label><input type="range" min="0" max="100" data-k="ib">
+<label>Localitate meteo</label><div style="display:flex;gap:6px"><input data-k="city"><button class="b" onclick="geo()">Caută</button></div>
+<label>Ordinea paginilor</label><div id="ord"></div></div>
+<div class="col glass"><label>Fundaluri proprii (imagini din telefon)</label><input type="file" accept="image/*" multiple onchange="up(this,'bg')"><button class="b" onclick="clrF('bg').then(loadBg)">Șterge fundalurile</button>
+<label>URL-uri fundal (câte unul pe linie)</label><textarea rows="3" data-k="bgurls"></textarea>
+<label>Fotografii pentru ramă</label><input type="file" accept="image/*" multiple onchange="up(this,'photo')"><button class="b" onclick="clrF('photo').then(lp)">Șterge fotografiile</button>
+<label>Google OAuth Client ID</label><input data-k="gid"><label>Spotify Client ID</label><input data-k="sid">
+<label>Redirect URI Spotify (copiază-l în dashboard)</label><input id="ru" readonly>
+<label>YouTube Music (Nume|URL pe linie)</label><textarea rows="3" data-k="ytl"></textarea></div></div>
+
+<div id="nav"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const IC=(c,t)=>`<b class="ic" style="background:${c}">${t}</b>`;
+const PG={home:['🏠','Acasă'],cal:['📅','Calendar'],spot:[IC('#1db954','♪'),'Spotify'],ytm:[IC('#ff0033','▶'),'YouTube Music'],photo:['🖼️','Ramă foto'],weather:['⛅','Meteo']};
+let S={h24:true,idle:120,interval:30,shuffle:true,city:'București',lat:44.43,lon:26.1,bright:100,ib:25,order:Object.keys(PG),pclock:true,bgurls:'',gid:'',sid:'',ytl:'Descoperă|https://music.youtube.com/'};
+try{Object.assign(S,JSON.parse(localStorage.s))}catch(e){}
+const save=()=>localStorage.s=JSON.stringify(S);
+const Z=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'],L=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
+/* IndexedDB */
+const db=new Promise(r=>{const q=indexedDB.open('nest',1);q.onupgradeneeded=()=>q.result.createObjectStore('f',{autoIncrement:true});q.onsuccess=()=>r(q.result)});
+const idb=async(m,f)=>{const d=await db;return new Promise(r=>{const t=d.transaction('f',m),q=f(t.objectStore('f'));t.oncomplete=()=>r(q&&q.result)})};
+const getF=async k=>(await idb('readonly',s=>s.getAll())).filter(x=>x.k==k).map(x=>x.b);
+const clrF=async k=>{const d=await db;return new Promise(r=>{const t=d.transaction('f','readwrite');t.objectStore('f').openCursor().onsuccess=e=>{const c=e.target.result;if(c){if(c.value.k==k)c.delete();c.continue()}};t.oncomplete=r})};
+async function up(el,k){for(const f of el.files)await idb('readwrite',s=>s.add({k,b:f}));k=='bg'?loadBg():lp();el.value=''}
+/* Ceas */
+function tick(){const d=new Date();let h=d.getHours(),m=String(d.getMinutes()).padStart(2,'0'),ap='';if(!S.h24){ap=h<12?' AM':' PM';h=h%12||12}else h=String(h).padStart(2,'0');
+const t=h+':'+m,ds=Z[d.getDay()]+', '+d.getDate()+' '+L[d.getMonth()]+' '+d.getFullYear();
+$('#bigt').textContent=t+ap;$('#bigd').textContent=ds;$('#ht').textContent=t+ap;$('#hd').textContent=ds;$('#pt').textContent=S.pclock?t+ap:''}
+/* Fundaluri */
+const SCN=(a,b,m,sun,sy)=>{let s='';for(let i=0;i<70;i++)s+=`<circle cx="${i*997%1600}" cy="${i*389%330}" r="${i%3?1:1.6}" fill="#fff" opacity=".7"/>`;let t='';for(let i=0;i<26;i++){const x=i<13?i*30:1200+(i-13)*32,h=70+i*37%60;t+=`<path d="M${x} ${560-h} l-24 ${h} h48z" fill="#04080f"/>`}
+return'url("data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient><linearGradient id="w" x2="0" y2="1"><stop offset="0" stop-color="${b}"/><stop offset="1" stop-color="#02050c"/></linearGradient></defs><rect width="1600" height="720" fill="url(#g)"/>${s}<circle cx="1180" cy="${sy}" r="${sun}" fill="#f6efd8"/><path d="M0 480L180 340 300 420 480 270 650 410 800 330 980 440 1150 310 1330 430 1470 350 1600 440V520H0Z" fill="${m}"/><rect y="500" width="1600" height="220" fill="url(#w)"/>${t}</svg>`)+'")'};
+const GR=[SCN('#050b24','#2a4d86','#0c1a33',38,150),SCN('#1b1042','#d0627f','#2a1850',55,330),SCN('#0b2e3f','#58b3a8','#123a4a',0,150)];
+let bgs=[],bi=0;
+async function loadBg(){const u=S.bgurls.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>`url(${x})`);const b=(await getF('bg')).map(x=>`url(${URL.createObjectURL(x)})`);bgs=[...b,...u];if(!bgs.length)bgs=GR;nextBg(0)}
+function nextBg(d=1){bi=(bi+d+bgs.length)%bgs.length;$('#bg').style.backgroundImage=bgs[bi]}
+/* Meteo */
+const WI=c=>c==0?'☀️':c<3?'⛅':c==3?'☁️':c<50?'🌫️':c<60?'🌦️':c<70?'🌧️':c<80?'❄️':c<85?'🌦️':c<90?'🌨️':'⛈️';
+const WT=c=>c==0?'Senin':c<3?'Parțial noros':c==3?'Noros':c<50?'Ceață':c<60?'Burniță':c<70?'Ploaie':c<80?'Ninsoare':c<85?'Averse':c<90?'Averse de zăpadă':'Furtună';
+let W;
+async function wx(){try{W=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.lat}&longitude=${S.lon}&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`)).json();rw()}catch(e){}}
+function rw(){if(!W||!W.current)return;const c=W.current,d=W.daily,h=W.hourly,n=new Date().getHours(),R=x=>Math.round(x);
+$('#hw').innerHTML=`<div style="display:flex;align-items:center;gap:12px"><span style="font-size:46px">${WI(c.weather_code)}</span><div><span class="big2">${R(c.temperature_2m)}<small>°C</small></span><div>${WT(c.weather_code)}</div><div class="dim" style="font-size:12px">Min: ${R(d.temperature_2m_min[0])}° Max: ${R(d.temperature_2m_max[0])}°</div></div></div>`;
+$('#wc').innerHTML=`<div class="big2" style="font-size:64px">${R(c.temperature_2m)}<small>°C</small></div><div style="font-size:18px">${WT(c.weather_code)}</div><div class="dim" style="font-size:13px">resimțit ${R(c.apparent_temperature)}° · vânt ${R(c.wind_speed_10m)} km/h</div>`;$('#wloc').textContent='📍 '+S.city;
+$('#wh').innerHTML=Array.from({length:14},(_,j)=>j+n).map(i=>`<div class="chip">${h.time[i].slice(11,13)}h<br>${WI(h.weather_code[i])}<br>${R(h.temperature_2m[i])}°</div>`).join('');
+$('#wd').innerHTML=d.time.map((_,i)=>`<div class="chip">${i?Z[new Date(d.time[i]).getDay()].slice(0,3):'Azi'}<br>${WI(d.weather_code[i])}<br><b>${R(d.temperature_2m_max[i])}°</b><br><span class="dim">${R(d.temperature_2m_min[i])}°</span></div>`).join('')}
+async function geo(){const el=$('[data-k=city]'),r=await(await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=ro&name='+encodeURIComponent(el.value))).json();if(r.results){const x=r.results[0];S.city=x.name;S.lat=x.latitude;S.lon=x.longitude;save();el.value=x.name;wx()}else alert('Localitate negăsită')}
+/* Google Calendar */
+let tok,ev=[],cm=new Date(new Date().getFullYear(),new Date().getMonth(),1),sel=new Date();
+try{const g=JSON.parse(localStorage.gt);if(g.e>Date.now())tok=g.t}catch(e){}
+function gconn(){if(!S.gid||!window.google)return alert('Introdu Client ID Google în Setări (și verifică internetul)');
+google.accounts.oauth2.initTokenClient({client_id:S.gid,scope:'https://www.googleapis.com/auth/calendar.readonly',callback:r=>{if(r.access_token){tok=r.access_token;localStorage.gt=JSON.stringify({t:tok,e:Date.now()+3500e3});ld()}}}).requestAccessToken({prompt:''})}
+const evd=e=>new Date(e.start.dateTime||e.start.date+'T00:00'),evt=e=>e.start.dateTime?evd(e).toTimeString().slice(0,5):'toată ziua',same=(a,b)=>a.toDateString()==b.toDateString();
+const COL=['#2f8cff','#a855f7','#22c55e','#f59e0b'],eve=e=>e.end&&e.start.dateTime?new Date(e.end.dateTime).toTimeString().slice(0,5):'';
+const evl=(e,i)=>`<div class="ev"><i style="background:${COL[i%4]}"></i><div>${evt(e)}${eve(e)?' – '+eve(e):''}<br><b>${e.summary||'(fără titlu)'}</b></div></div>`;
+const up3=n=>ev.filter(e=>evd(e)>=new Date(new Date().setHours(0,0,0,0))).slice(0,n).map(evl).join('')||'<span class="dim">Niciun eveniment</span>';
+async function ld(){if(!tok)return rc();const a=new Date(new Date().getFullYear(),new Date().getMonth(),1),b=new Date(+a+120*864e5);
+try{const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=250&timeMin='+a.toISOString()+'&timeMax='+b.toISOString(),{headers:{Authorization:'Bearer '+tok}});if(r.status==401){tok=0;localStorage.removeItem('gt')}else ev=(await r.json()).items||[]}catch(e){}rc()}
+function rc(){$('#cbtn').style.display=tok?'none':'';const y=cm.getFullYear(),m=cm.getMonth(),f=(new Date(y,m,1).getDay()+6)%7,n=new Date(y,m+1,0).getDate();
+$('#cmh').textContent=L[m][0].toUpperCase()+L[m].slice(1)+' '+y;let g=['Lu','Ma','Mi','J','V','S','D'].map(x=>`<b>${x}</b>`).join('')+'<i></i>'.repeat(f);
+for(let d=1;d<=n;d++){const dt=new Date(y,m,d);g+=`<u class="${same(dt,sel)?'sel':''} ${same(dt,new Date())?'tod':''}" onclick="sel=new Date(${y},${m},${d});rc()">${d}${ev.some(e=>same(evd(e),dt))?'<s></s>':''}</u>`}
+$('#cg').innerHTML=g;const day=ev.filter(e=>same(evd(e),sel));
+$('#ca').innerHTML=`<h3>${Z[sel.getDay()].slice(0,3)}, ${sel.getDate()} ${L[sel.getMonth()].slice(0,3)}.</h3>`+(day.map(evl).join('')||'<p class="dim">Nimic programat</p>')+'<h3 style="margin-top:10px">Următoarele</h3>'+up3(4);
+const td=ev.filter(e=>same(evd(e),new Date()));$('#he').innerHTML='<b>Evenimente astăzi</b>'+(tok?(td.map(evl).join('')||'<div class="dim" style="margin-top:6px">Nimic programat</div>'):'<div class="dim" style="margin-top:6px">Conectează calendarul</div>')}
+/* Spotify (PKCE) */
+const RU=location.origin+location.pathname;let pl=0;
+async function sauth(){if(!S.sid)return alert('Introdu Client ID Spotify în Setări');if(!crypto.subtle)return alert('Spotify necesită HTTPS (vezi instrucțiunile)');
+const A='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',v=[...crypto.getRandomValues(new Uint8Array(64))].map(x=>A[x%62]).join('');localStorage.v=v;
+const c=btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v))))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+location=`https://accounts.spotify.com/authorize?response_type=code&client_id=${S.sid}&scope=${encodeURIComponent('user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private')}&redirect_uri=${encodeURIComponent(RU)}&code_challenge_method=S256&code_challenge=${c}`}
+async function stok(b){const r=await(await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({client_id:S.sid,...b})})).json();
+if(r.access_token)localStorage.st=JSON.stringify({a:r.access_token,r:r.refresh_token||JSON.parse(localStorage.st||'{}').r,e:Date.now()+r.expires_in*1e3-6e4})}
+async function sapi(p,o={}){let t=JSON.parse(localStorage.st||'null');if(!t)return;if(Date.now()>t.e){await stok({grant_type:'refresh_token',refresh_token:t.r});t=JSON.parse(localStorage.st)}
+try{const r=await fetch('https://api.spotify.com/v1'+p,{...o,headers:{Authorization:'Bearer '+t.a,'Content-Type':'application/json'}});return r.status==200?r.json():null}catch(e){}}
+const sc=(m,p)=>sapi(p,{method:m}).then(()=>setTimeout(sp,600));
+let pg0=0,dur=0,t0=0,shs=0;
+const mmss=ms=>{ms=Math.floor(ms/1e3);return Math.floor(ms/60)+':'+String(ms%60).padStart(2,'0')};
+function rb(){if(!dur)return;const p=Math.min(dur,pg0+(pl?Date.now()-t0:0));$('#sfill').style.width=p/dur*100+'%';$('#st1').textContent=mmss(p);$('#st2').textContent=mmss(dur)}
+const shf=()=>sapi('/me/player/shuffle?state='+!shs,{method:'PUT'}).then(()=>setTimeout(sp,600));
+async function sp(){$('#sbtn').style.display=localStorage.st?'none':'';if(!localStorage.st)return;const p=await sapi('/me/player');
+if(!p||!p.item){$('#sn').textContent='Nimic în redare (pornește Spotify pe telefon)';$('#snow').textContent='';return}const i=p.item;
+$('#sc').src=i.album.images[0]?i.album.images[0].url:'';$('#sa').textContent=i.artists.map(a=>a.name).join(', ');$('#sn').textContent=i.name;pl=p.is_playing;$('#snow').textContent=pl?'Acum se redă':'Pauză';$('#spp').textContent=pl?'⏸':'▶';
+if(p.device)$('#sv').value=p.device.volume_percent;pg0=p.progress_ms;dur=i.duration_ms;t0=Date.now();shs=p.shuffle_state;$('#shb').style.opacity=shs?1:.5;rb()}
+async function spl(){const r=await sapi('/me/playlists?limit=30');if(r)$('#spl').innerHTML=r.items.map(x=>`<div class="chip2" onclick="sapi('/me/player/play',{method:'PUT',body:JSON.stringify({context_uri:'${x.uri}'})}).then(()=>setTimeout(sp,800))">${x.name}</div>`).join('')}
+/* Ramă foto */
+let ph=[],pi=0,pp=0,pT,fl=0;
+async function lp(){ph=(await getF('photo')).map(b=>URL.createObjectURL(b));pi=-1;pn(1)}
+function pn(d){$('#pmsg').style.display=ph.length?'none':'';if(!ph.length)return;pi=S.shuffle&&d>0?Math.floor(Math.random()*ph.length):(pi+d+ph.length)%ph.length;fl^=1;const a=$$('.pi');a[fl].src=ph[pi];a.forEach((x,i)=>x.style.opacity=i==fl?1:0)}
+function pst(){$('#pis').textContent=S.interval;clearInterval(pT);pT=setInterval(()=>!pp&&cur=='photo'&&pn(1),S.interval*1e3)}
+/* YT Music */
+function ryt(){$('#yl').innerHTML=S.ytl.split('\n').filter(Boolean).map(l=>{const[n,u]=l.split('|');return`<a class="card chip2" href="${(u||'').trim()}">${n}</a>`}).join('')}
+/* Navigare */
+let cur='clock';
+function show(id){cur=id;$$('.pg').forEach(p=>p.classList.toggle('on',p.id==id));$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.p==id));
+if(id=='spot'){sp();spl()}if(id=='photo')lp();if(id=='cal')ld();if(id=='home'||id=='weather')wx();if(id=='set')fillSet()}
+function nav(){$('#nav').innerHTML=S.order.map(k=>(k=='weather'?'<i></i>':'')+`<button data-p="${k}" onclick="go('${k}')"><span>${PG[k][0]}</span>${PG[k][1]}</button>`).join('')+'<i></i><button data-p="set" onclick="show(\'set\')"><span>⚙</span>Setări</button>'}
+function go(k){show(k=='home'&&cur=='home'?'clock':k)}
+let x0;addEventListener('touchstart',e=>x0=e.touches[0].clientX);
+addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)<70||e.target.closest('input,textarea,.row,#cg'))return;let i=S.order.indexOf(cur);if(i<0)i=0;else i=(i+(dx<0?1:-1)+S.order.length)%S.order.length;show(S.order[i])});
+/* Setări */
+function fillSet(){$$('[data-k]').forEach(el=>{const v=S[el.dataset.k];el.type=='checkbox'?el.checked=v:el.value=v});$('#ru').value=RU;
+$('#ord').innerHTML=S.order.map((k,i)=>`<div class="chip2">${PG[k][1]} <button class="b" style="padding:2px 8px" onclick="mv(${i},-1)">↑</button><button class="b" style="padding:2px 8px" onclick="mv(${i},1)">↓</button></div>`).join('')}
+function mv(i,d){const j=i+d;if(j<0||j>=S.order.length)return;[S.order[i],S.order[j]]=[S.order[j],S.order[i]];save();nav();fillSet();show('set')}
+document.addEventListener('change',e=>{const el=e.target,k=el.dataset&&el.dataset.k;if(!k)return;S[k]=el.type=='checkbox'?el.checked:(el.type=='number'||el.type=='range'||k=='interval')?+el.value:el.value;save();
+if(k=='bgurls')loadBg();if(k=='interval')pst();if(k=='ytl')ryt();if(k=='bright')dim();tick()});
+/* Repaus, luminozitate, ecran activ */
+let last=Date.now(),idle=0;
+function dim(){const v=idle?S.ib:S.bright;$('#dim').style.opacity=(100-v)/100*.92;if(window.fully)try{fully.setScreenBrightness(Math.round(v*2.55))}catch(e){}}
+['pointerdown','touchstart'].forEach(t=>addEventListener(t,()=>{last=Date.now();if(idle){idle=0;dim()}},true));
+setInterval(()=>{if(!idle&&Date.now()-last>S.idle*1e3){idle=1;if(cur!='clock')show('clock');dim()}},3000);
+async function wl(){try{await navigator.wakeLock.request('screen')}catch(e){}}wl();document.addEventListener('visibilitychange',()=>document.visibilityState=='visible'&&wl());
+/* Pornire */
+function netst(){$('#wf').textContent=navigator.onLine?'📶':'⛔'}addEventListener('online',netst);addEventListener('offline',netst);
+navigator.getBattery&&navigator.getBattery().then(b=>{const u=()=>$('#bt').textContent=(b.charging?'⚡':'')+Math.round(b.level*100)+'%';u();b.onlevelchange=b.onchargingchange=u});
+const q=new URLSearchParams(location.search);
+if(q.get('code'))stok({grant_type:'authorization_code',code:q.get('code'),redirect_uri:RU,code_verifier:localStorage.v}).then(()=>{history.replaceState(0,'',RU);show('spot')});
+nav();tick();setInterval(tick,1000);loadBg();setInterval(()=>cur=='clock'&&nextBg(1),60000);
+wx();setInterval(wx,15*60e3);ryt();rc();ld();setInterval(ld,10*60e3);setInterval(()=>cur=='spot'&&sp(),5000);pst();dim();setInterval(rb,1000);netst();show('clock');
+</script></body></html>
